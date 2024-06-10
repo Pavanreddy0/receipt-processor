@@ -21,12 +21,14 @@ def hello():
 def process_receipts():
     try:
         if request.content_type != 'application/json' or request.json is None or not request.json:
+            app.logger.error(f"The receipt is invalid")
             return Response(json.dumps("The receipt is invalid"), status=400, mimetype="application/json")
         data = request.json
 
         receipt: Receipt = Receipt(**data)
         receipt_id = crud.create_receipt(receipt)
 
+        app.logger.info(f"Successfully created receipt {receipt_id}")
         return Response(json.dumps({"id": receipt_id}), status=201, mimetype="application/json")
 
     except ValidationError as e:
@@ -43,9 +45,11 @@ def get_receipts_points(receipt_id: str):
     try:
         app.logger.info(f"Id is {receipt_id}")
         receipt_points = crud.get_receipt_points(receipt_id)
+        app.logger.info(f"Successfully retrieved points for receipt id : {receipt_id}")
         return Response(json.dumps({"points": receipt_points}), status=200, mimetype="application/json")
 
     except ValueError as e:
+        app.logger.error(f"No receipt found for that id {receipt_id}")
         return Response(json.dumps("No receipt found for that id"), status=404, mimetype="application/json")
     except Exception as e:
         app.logger.error(f"Error fetching points for receipt {receipt_id}: {e}")
