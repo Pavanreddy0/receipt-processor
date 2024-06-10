@@ -2,6 +2,7 @@ import json
 
 from flask import Flask, Response, request
 from flask_cors import CORS
+from pydantic.error_wrappers import ValidationError
 
 import crud
 from models import Receipt
@@ -28,7 +29,7 @@ def process_receipts():
 
         return Response(json.dumps({"id": receipt_id}), status=201, mimetype="application/json")
 
-    except TypeError as e:
+    except ValidationError as e:
         app.logger.error(f"Error processing receipt: {e}")
         return Response(json.dumps("The receipt is invalid"), status=400, mimetype="application/json")
 
